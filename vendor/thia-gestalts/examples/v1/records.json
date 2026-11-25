@@ -1,0 +1,55 @@
+[
+  {
+    "kind": "skill",
+    "id": "key:org.example.math:rounding/nearest-ten",
+    "name": "Round to the nearest ten"
+  },
+  {
+    "kind": "fact",
+    "id": "key:org.example.math:multiples-of-ten/around-47",
+    "statement": "The two nearest multiples of ten to 47 are 40 and 50."
+  },
+  {
+    "kind": "learning-event",
+    "id": "26e36d8d-5c99-466b-91c3-cf43be5f37cd",
+    "type": "attempt",
+    "occurredAtMs": 1760000000000,
+    "origin": { "app": "org.example.math", "activity": "round-47-to-ten" },
+    "targets": [
+      { "kind": "skill", "id": "key:org.example.math:rounding/nearest-ten" },
+      { "kind": "fact", "id": "key:org.example.math:multiples-of-ten/around-47" }
+    ],
+    "score": 0
+  },
+  {
+    "kind": "topic",
+    "id": "name:62c3a97a69657220637572766573",
+    "name": "Bézier Curves"
+  },
+  {
+    "kind": "learning-event",
+    "id": "8507ec14-081f-413b-b0f1-8e755707fffb",
+    "type": "engagement",
+    "occurredAtMs": 1760000060000,
+    "origin": { "app": "org.example.curves", "activity": "bezier-explorer" },
+    "targets": [
+      { "kind": "topic", "id": "name:62c3a97a69657220637572766573" }
+    ]
+  },
+  {
+    "kind": "artifact",
+    "id": "name:637572766520736b65746368626f6f6b",
+    "name": "Curve Sketchbook"
+  },
+  {
+    "kind": "note",
+    "id": "e39a9377-d250-4fbc-b0c0-e67ad07f7420",
+    "text": "The handles change the curve's direction.",
+    "attachments": [
+      { "id": "d7b2e229-5e14-463f-a92a-4c6607d88157", "mediaType": "image/png" }
+    ],
+    "related": [
+      { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b" }
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+[package]
+name = "gestalter-crypto"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+argon2 = "=0.5.3"
+jni = "=0.21.1"
+opaque-ke = { version = "=4.0.1", features = ["argon2"] }
+rand = "=0.8.6"
+ring = "=0.17.14"
+sha2 = "=0.10.9"
+zeroize = "1"

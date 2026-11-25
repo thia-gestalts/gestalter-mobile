@@ -1,0 +1,46 @@
+{
+  "equal": [
+    [
+      { "kind": "topic", "id": "name:62c3a97a69657220637572766573", "name": "Bézier Curves" },
+      { "kind": "topic", "id": "name:62c3a97a69657220637572766573", "name": "\tBE\u0301ZIER\u00a0  CURVES\n" }
+    ],
+    [
+      { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b", "name": "Curve Sketchbook" },
+      { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b", "name": "CURVE\u202fSKETCHBOOK" }
+    ],
+    [
+      { "kind": "topic", "id": "name:73747261737365", "name": "Straße" },
+      { "kind": "topic", "id": "name:73747261737365", "name": "STRASSE" }
+    ],
+    [
+      { "kind": "topic", "id": "name:c7b0", "name": "ǰ" },
+      { "kind": "topic", "id": "name:c7b0", "name": "J\u030c" }
+    ]
+  ],
+  "distinct": [
+    [
+      { "kind": "topic", "id": "name:62c3a97a69657220637572766573", "name": "Bézier Curves" },
+      { "kind": "artifact", "id": "name:62c3a97a69657220637572766573", "name": "Bézier Curves" }
+    ],
+    [
+      { "kind": "topic", "id": "name:612d62", "name": "A-B" },
+      { "kind": "topic", "id": "name:612062", "name": "A B" }
+    ],
+    [
+      { "kind": "topic", "id": "name:c3a9", "name": "é" },
+      { "kind": "topic", "id": "name:65", "name": "e" }
+    ],
+    [
+      { "kind": "topic", "id": "name:69cc87", "name": "İ" },
+      { "kind": "topic", "id": "name:69", "name": "I" }
+    ],
+    [
+      { "kind": "skill", "id": "key:org.example.geography:france/recognize-flag", "name": "Recognize the flag of France" },
+      { "kind": "skill", "id": "key:org.example.geography:france/locate", "name": "Locate France on a map" }
+    ],
+    [
+      { "kind": "note", "id": "ecb005b9-a038-42ef-bb0f-385caaff9343", "text": "Try again tomorrow." },
+      { "kind": "note", "id": "c714c416-a88b-4ff9-aca1-b01fe68ff9ac", "text": "Try again tomorrow." }
+    ]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/entity/v1.json",
+  "title": "Entity",
+  "description": "A referenced person, institution or other identifiable actor.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "required": ["name"],
+  "properties": {
+    "kind": { "const": "entity" },
+    "name": { "$ref": "../common/v2.json#/$defs/displayName" }
+  },
+  "unevaluatedProperties": false
+}

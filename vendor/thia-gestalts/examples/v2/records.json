@@ -1,0 +1,54 @@
+[
+  {
+    "kind": "annotation",
+    "id": "af010a82-a78e-4aff-a3c5-524f4575dc02",
+    "text": "The two sketches use the same endpoints but different handles.",
+    "target": { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b" },
+    "locator": "p. 12"
+  },
+  {
+    "kind": "question",
+    "id": "b8e14836-b92e-47c4-98ff-0f2418b55545",
+    "text": "What changes when I move a handle without moving either endpoint?",
+    "openedBy": [
+      { "kind": "learning-event", "id": "8507ec14-081f-413b-b0f1-8e755707fffb" }
+    ],
+    "answeredBy": [
+      { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b" }
+    ]
+  },
+  {
+    "kind": "entity",
+    "id": "deafaaf9-cec3-4d1d-83b3-ae8285a8dd6a",
+    "name": "Ada Chen"
+  },
+  {
+    "kind": "claim",
+    "id": "81b90764-4306-46c8-b90a-495f44777285",
+    "statement": "Moving a handle changes the curve's shape while its endpoints stay fixed.",
+    "attributedTo": [
+      { "kind": "entity", "id": "deafaaf9-cec3-4d1d-83b3-ae8285a8dd6a" }
+    ],
+    "supportingReferences": [
+      { "kind": "annotation", "id": "af010a82-a78e-4aff-a3c5-524f4575dc02" }
+    ]
+  },
+  {
+    "kind": "flashcard",
+    "id": "710e3d62-8bb2-4539-a3fe-e2f5e0f96d59",
+    "front": "Which two multiples of ten lie immediately below and above 47?",
+    "back": "40 and 50",
+    "targets": [
+      { "kind": "fact", "id": "key:org.example.math:multiples-of-ten/around-47" }
+    ]
+  },
+  {
+    "kind": "task",
+    "id": "66128ffa-608f-4f38-a1df-21f1fd6ea01c",
+    "instruction": "Mark 47 on a number line and round it to the nearest ten.",
+    "outcome": "47 rounds to 50 because it is 3 away from 50 and 7 away from 40.",
+    "targets": [
+      { "kind": "skill", "id": "key:org.example.math:rounding/nearest-ten" }
+    ]
+  }
+]

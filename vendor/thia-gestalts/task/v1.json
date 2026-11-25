@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/task/v1.json",
+  "title": "Task",
+  "description": "An instruction with a checkable outcome that can exercise a skill.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "required": ["instruction", "outcome"],
+  "properties": {
+    "kind": { "const": "task" },
+    "instruction": { "type": "string", "minLength": 1 },
+    "outcome": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The expected result or criterion a learner can check."
+    },
+    "targets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../common/v2.json#/$defs/recordReference",
+        "properties": { "kind": { "const": "skill" } }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/claim/v1.json",
+  "title": "Claim",
+  "description": "An assertion with optional attribution and supporting references.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "required": ["statement"],
+  "properties": {
+    "kind": { "const": "claim" },
+    "statement": { "type": "string", "minLength": 1 },
+    "attributedTo": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../common/v2.json#/$defs/recordReference",
+        "properties": { "kind": { "const": "entity" } }
+      }
+    },
+    "supportingReferences": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "../common/v2.json#/$defs/recordReference" }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/annotation/v1.json",
+  "title": "Annotation",
+  "description": "Authored text attached to an identified record.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "required": ["text", "target"],
+  "properties": {
+    "kind": { "const": "annotation" },
+    "text": { "type": "string", "minLength": 1 },
+    "target": { "$ref": "../common/v2.json#/$defs/recordReference" },
+    "locator": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A human-readable location within the target.",
+      "examples": ["p. 12"]
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,25 @@
+{
+  "citations": [
+    {
+      "citationKey": "chen2020curves",
+      "bibtexType": "book",
+      "fields": {
+        "title": "Curve Sketchbook",
+        "author": "Chen, Ada",
+        "year": "2020"
+      },
+      "artifact": { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b" }
+    },
+    {
+      "citationKey": "chen2024curves",
+      "bibtexType": "book",
+      "fields": {
+        "title": "CURVE SKETCHBOOK",
+        "author": "Chen, Ada",
+        "year": "2024",
+        "edition": "2"
+      },
+      "artifact": { "kind": "artifact", "id": "name:637572766520736b65746368626f6f6b" }
+    }
+  ]
+}

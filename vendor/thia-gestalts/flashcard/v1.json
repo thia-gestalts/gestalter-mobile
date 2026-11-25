@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/flashcard/v1.json",
+  "title": "Flashcard",
+  "description": "A front/back exercise that can target facts.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "required": ["front", "back"],
+  "properties": {
+    "kind": { "const": "flashcard" },
+    "front": { "type": "string", "minLength": 1 },
+    "back": { "type": "string", "minLength": 1 },
+    "targets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../common/v2.json#/$defs/recordReference",
+        "properties": { "kind": { "const": "fact" } }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}
