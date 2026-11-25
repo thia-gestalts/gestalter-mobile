@@ -1,0 +1,80 @@
+[env]
+ANDROID_HOME = "{{ env.ANDROID_HOME | default(value=home ~ '/Android/Sdk') }}"
+
+[tasks.setup]
+description = "Install Android SDK packages and Rust targets for development"
+raw = true
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+for tool in javac jar keytool zip rustup cargo; do
+    if ! command -v "$tool" >/dev/null; then
+        echo "Install $tool and make it available on PATH before running setup." >&2
+        exit 1
+    fi
+done
+
+sdk=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
+ndk_version=28.2.13676358
+ndk=${ANDROID_NDK_HOME:-"$sdk/ndk/$ndk_version"}
+packages=()
+[[ -x "$sdk/platform-tools/adb" ]] || packages+=(platform-tools)
+[[ -f "$sdk/platforms/android-35/android.jar" ]] || packages+=("platforms;android-35")
+[[ -x "$sdk/build-tools/35.0.0/apksigner" ]] || packages+=("build-tools;35.0.0")
+if [[ ! -x "$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip" ]]; then
+    if [[ -n ${ANDROID_NDK_HOME:-} ]]; then
+        echo "No supported Android NDK found at $ANDROID_NDK_HOME." >&2
+        exit 1
+    fi
+    packages+=("ndk;$ndk_version")
+fi
+if [[ -v 'packages[0]' ]]; then
+    sdkmanager="$sdk/cmdline-tools/latest/bin/sdkmanager"
+    if [[ ! -x "$sdkmanager" ]]; then
+        sdkmanager=$(command -v sdkmanager) || {
+            echo "Install Android SDK Command-line Tools in $sdk or add sdkmanager to PATH." >&2
+            exit 1
+        }
+    fi
+    "$sdkmanager" --sdk_root="$sdk" --install "${packages[@]}"
+fi
+
+rustup target add aarch64-linux-android x86_64-linux-android
+cargo fetch --locked --manifest-path native/Cargo.toml \
+    --target aarch64-linux-android --target x86_64-linux-android
+'''
+
+[tasks.dev]
+description = "Build, install, and launch Gestalter on an Android device"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+sdk=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
+adb="$sdk/platform-tools/adb"
+"$adb" get-state >/dev/null
+scripts/build-apk.sh
+"$adb" install -r build/gestalter-mobile.apk
+"$adb" shell am start -W -n thia.gestalter.mobile/thia.gestalter.android.MainActivity
+'''
+
+[tasks.apk]
+description = "Build a versioned APK and show it in Nautilus"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+sdk=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
+scripts/build-apk.sh
+badging=$("$sdk/build-tools/35.0.0/aapt2" dump badging build/gestalter-mobile.apk)
+version=$(sed -n "s/^package: .*versionName='\([^']*\)'.*/\1/p" <<< "$badging")
+if [[ -z "$version" || "$version" == */* ]]; then
+    echo "Cannot use the APK version in a filename: $version" >&2
+    exit 1
+fi
+apk="$PWD/build/gestalter-mobile-v$version.apk"
+cp -- build/gestalter-mobile.apk "$apk"
+echo "Versioned APK: $apk"
+nautilus --select "$apk"
+'''
