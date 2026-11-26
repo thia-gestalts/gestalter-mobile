@@ -175,7 +175,7 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     const academicOp = await authoring.put(academicKey, academic, [pixels, unknownOtherBytes]);
     const related = [{ kind: 'artifact', id: 'name:637572766520736b65746368626f6f6b' }];
     const desktopValue = { kind: 'note', id: desktopNote, text: 'Desktop note', related,
-      tags: ['desktop-tag'], extra: { keep: [1, null] } };
+      title: 'Desktop title', tags: ['desktop-tag'], aliases: ['desktop alias'], extra: 'Desktop extra' };
     await authoring.put(sdk.recordKey(desktopValue), desktopValue);
     await authoring.sync();
     const originalUnknown = (await authoring.records()).find(h => h.id === academicOp);
@@ -213,7 +213,7 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     globalThis.addEventListener = (event, callback) => { if (event === 'pagehide') disposeDesktop = callback; };
     globalThis.testDesktopSession = desktopSession;
     await writeFile(join(runtime, 'remembered.js'), 'export const remembered = {read: () => globalThis.testDesktopSession};');
-    const desktopSource = (await readFile(join(desktopRoot, 'src/olymp.js'), 'utf8'))
+    const desktopSource = (await readFile(join(desktopRoot, 'src/entities/workspace/olymp.js'), 'utf8'))
       .replace("const runtime = '/olymp/';", "const runtime = './';")
       .replace("runtime + 'browser.js'", "runtime + 'remembered.js'");
     await writeFile(join(runtime, 'desktop.mjs'), desktopSource);
@@ -248,8 +248,13 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     const disposable = (await desktop.call('listNotes', [])).find(n => n.title === disposalKeyPrefix);
     assert.ok(disposable);
     await mobile('queue-crud');
-    await desktopEventually(async () =>
-      (await desktop.call('getNote', [desktopNote]))?.text === 'Updated from Queue');
+    const mobileEdit = await desktopEventually(async () => {
+      const note = await desktop.call('getNote', [desktopNote]);
+      return note?.text === 'Updated from Queue' && note;
+    });
+    for (const field of ['title', 'aliases', 'extra']) {
+      assert.deepEqual(mobileEdit[field], desktopValue[field]);
+    }
     assert.equal(await desktop.call('getNote', [disposable.id]), null);
 
     disposeDesktop();
