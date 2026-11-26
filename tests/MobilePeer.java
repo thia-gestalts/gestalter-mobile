@@ -167,6 +167,23 @@ public final class MobilePeer {
                 sync(profile.replica());
                 send("result", profile.replica().status());
                 break;
+            case "move-origin":
+                String accountId = profile.account().id;
+                profile.signOut(OFFLINE);
+                save(profile.replica(), "Keep in local workspace", false);
+                String newOrigin = "https://moved.olymp.test";
+                profile.signIn(PIPE, newOrigin, "mobile.e2e", PASSWORD, false, false, "Gestalter Android moved");
+                require(profile.account().id.equals(accountId) && profile.account().origin.equals(newOrigin),
+                        "The existing Olymp account did not reopen at the new origin");
+                require(profile.replica().notes().isEmpty(), "The new origin reused the old local replica");
+                sync(profile.replica());
+                imageMatches(profile.replica(), note(profile.replica(), "Capture offline 🖼"), png);
+                require(profile.replica().notes().stream().noneMatch(n -> n.text.equals("Keep in local workspace")),
+                        "Guest note synced despite guest inclusion being disabled");
+                profile.signOut(PIPE);
+                note(profile.replica(), "Keep in local workspace");
+                send("result", "Account, notes, and attachment reopened at the new origin");
+                break;
             default: throw new IllegalArgumentException(args[0]);
         }
     }

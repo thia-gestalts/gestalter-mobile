@@ -45,6 +45,10 @@ cargo fetch --locked --manifest-path native/Cargo.toml \
     --target aarch64-linux-android --target x86_64-linux-android
 '''
 
+[tasks.check]
+description = "Check Olymp authentication, sync, and origin migration against the interoperability fixtures"
+run = "scripts/check.sh"
+
 [tasks.dev]
 description = "Build, install, and launch Gestalter on an Android device"
 run = '''

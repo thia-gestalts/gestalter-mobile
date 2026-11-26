@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
@@ -85,10 +85,10 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     const wasm = await readFile(join(runtime, 'opaque/opaque_bg.wasm'));
     const data = join(temp, 'olymp');
     let server, fetchOlymp;
-    async function startService() {
+    async function startService(directory = data) {
       // The real Olymp router serves HTTP/1.1 over an inherited Unix stream.
       server = spawned('sh', ['-c', 'exec "$1" --connected-stdin <&3', 'olymp', olymp],
-        { stdio: ['ignore', 'pipe', 'inherit', 'pipe'], env: { ...process.env, OLYMP_DATA: data } });
+        { stdio: ['ignore', 'pipe', 'inherit', 'pipe'], env: { ...process.env, OLYMP_DATA: directory } });
       assert.equal(await ready(server), 'Olymp v1 ready');
       const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
       agent.createConnection = () => server.stdio[3];
@@ -122,12 +122,13 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
           if (stage === 'offline') child.kill('SIGKILL');
           continue;
         }
-        const { origin, path, method, headers, body } = event.request;
+        const { origin: requestedOrigin, path, method, headers, body } = event.request;
+        assert.equal(requestedOrigin, stage === 'move-origin' ? 'https://moved.olymp.test' : origin);
         if (interceptor(event.request)) {
           child.stdin.write('{"status":0}\n');
           continue;
         }
-        const response = await fetchOlymp(origin + '/v1/' + path, {
+        const response = await fetchOlymp('/v1/' + path, {
           method, headers, body: body === null ? undefined : Buffer.from(body, 'base64'),
         });
         child.stdin.write(JSON.stringify({ status: response.status,
@@ -278,6 +279,11 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     recovered.close();
 
     await mobile('switch');
+    await stop(server);
+    const movedData = join(temp, 'olymp-moved');
+    await rename(data, movedData);
+    await startService(movedData);
+    await mobile('move-origin');
     console.log('Offline SIGKILL/reopen, staged retry, desktop image and Queue CRUD, typed identity, account isolation, and opaque academic attachment recovery passed.');
   } finally {
     disposeDesktop?.();
