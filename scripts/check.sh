@@ -2,6 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+node scripts/lint-layers.mjs
 (cd vendor && sha256sum --check SHA256SUMS)
 pin=$(python3 -c 'import json; print(json.load(open("vendor/thia-gestalts.pin.json"))["releaseSha256"])')
 gestalts=$(cd vendor/thia-gestalts

@@ -5,18 +5,21 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <application android:name="thia.gestalter.android.GestalterApp" android:label="@string/app_name"
+    <application android:name="thia.gestalter.android.workspace.GestalterApp" android:label="@string/app_name"
         android:icon="@drawable/gestalter" android:theme="@style/AppTheme" android:allowBackup="false"
         android:networkSecurityConfig="@xml/network_security_config" android:extractNativeLibs="true">
-        <activity android:name="thia.gestalter.android.MainActivity" android:exported="true"
+        <activity android:name="thia.gestalter.android.shell.MainActivity" android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize" />
+        <!-- The launcher entry keeps its original component name so existing home-screen icons keep working. -->
+        <activity-alias android:name="thia.gestalter.android.MainActivity"
+            android:targetActivity="thia.gestalter.android.shell.MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <service android:name="thia.gestalter.android.SyncJob" android:permission="android.permission.BIND_JOB_SERVICE"
+        </activity-alias>
+        <service android:name="thia.gestalter.android.platform.SyncJob" android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
     </application>
 </manifest>

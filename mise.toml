@@ -45,8 +45,12 @@ cargo fetch --locked --manifest-path native/Cargo.toml \
     --target aarch64-linux-android --target x86_64-linux-android
 '''
 
+[tasks.lint]
+description = "Check that source packages respect the layered architecture"
+run = "node scripts/lint-layers.mjs"
+
 [tasks.check]
-description = "Check Olymp authentication, sync, and origin migration against the interoperability fixtures"
+description = "Lint layers, then check notes, Olymp authentication, sync, and origin migration against the interoperability fixtures"
 run = "scripts/check.sh"
 
 [tasks.dev]

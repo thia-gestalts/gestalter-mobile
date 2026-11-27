@@ -1,11 +1,11 @@
-package thia.gestalter.android;
+package thia.gestalter.android.platform;
 
 import java.io.*;
 import java.net.*;
 import java.util.Map;
 import thia.gestalter.core.Olymp;
 
-final class AndroidTransport implements Olymp.Transport {
+public final class AndroidTransport implements Olymp.Transport {
     private static final int RESPONSE_LIMIT = 5 * 1024 * 1024;
 
     public byte[] request(String origin, String path, String method, Map<String, String> headers, byte[] body)

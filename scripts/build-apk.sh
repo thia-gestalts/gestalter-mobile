@@ -14,6 +14,7 @@ if [[ ! "$origin" =~ ^(https://[A-Za-z0-9.-]+|http://(localhost|127\.0\.0\.1|10\
     exit 1
 fi
 
+node scripts/lint-layers.mjs
 if (( $# == 0 )); then set -- arm64-v8a x86_64; fi
 scripts/build-native.sh "$@"
 mkdir -p build/apk/{classes,dex,package}
@@ -25,9 +26,9 @@ gson=vendor/gson-2.11.0.jar
 "$tools/aapt2" link -I "$platform" --manifest src/main/AndroidManifest.xml \
     --java build/apk/generated -o build/apk/package/resources.apk build/apk/resources.zip
 
-mkdir -p build/apk/generated/thia/gestalter/android
-cat > build/apk/generated/thia/gestalter/android/BuildConfig.java <<EOF2
-package thia.gestalter.android;
+mkdir -p build/apk/generated/thia/gestalter/android/workspace
+cat > build/apk/generated/thia/gestalter/android/workspace/BuildConfig.java <<EOF2
+package thia.gestalter.android.workspace;
 
 final class BuildConfig {
     private BuildConfig() {}

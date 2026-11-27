@@ -1,4 +1,4 @@
-package thia.gestalter.android;
+package thia.gestalter.android.platform;
 
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -13,10 +13,10 @@ import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import thia.gestalter.core.*;
 
-final class AndroidFiles {
+public final class AndroidFiles {
     private AndroidFiles() {}
 
-    static void syncDirectory(Path directory) throws IOException {
+    public static void syncDirectory(Path directory) throws IOException {
         try {
             FileDescriptor handle = Os.open(directory.toString(), OsConstants.O_RDONLY, 0);
             try { Os.fsync(handle); }
@@ -26,12 +26,12 @@ final class AndroidFiles {
         }
     }
 
-    static final class Vault implements Profile.Vault {
+    public static final class Vault implements Profile.Vault {
         private static final String ALIAS = "gestalter-profile-v1";
         private final DurableFiles files;
         private final Path path;
 
-        Vault(DurableFiles files, Path path) {
+        public Vault(DurableFiles files, Path path) {
             this.files = files;
             this.path = path;
         }

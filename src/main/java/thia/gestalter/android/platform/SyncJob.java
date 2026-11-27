@@ -1,4 +1,4 @@
-package thia.gestalter.android;
+package thia.gestalter.android.platform;
 
 import android.app.job.*;
 import android.util.SparseArray;
@@ -9,7 +9,7 @@ public final class SyncJob extends JobService {
     @Override public boolean onStartJob(JobParameters params) {
         int id = params.getJobId();
         active.put(id, params);
-        ((GestalterApp) getApplication()).requestSync(retry -> {
+        ((SyncHost) getApplication()).requestSync(retry -> {
             if (active.get(id) == params) {
                 active.remove(id);
                 jobFinished(params, retry);

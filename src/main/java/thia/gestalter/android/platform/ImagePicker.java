@@ -1,4 +1,4 @@
-package thia.gestalter.android;
+package thia.gestalter.android.platform;
 
 import android.app.Activity;
 import android.content.*;
@@ -9,17 +9,17 @@ import java.io.*;
 import java.util.Locale;
 import thia.gestalter.core.Notes;
 
-final class ImagePicker {
-    static final int REQUEST = 10;
+public final class ImagePicker {
+    public static final int REQUEST = 10;
 
-    void open(Activity activity) {
+    public void open(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
         activity.startActivityForResult(intent, REQUEST);
     }
 
-    Notes.NewImage selected(ContentResolver resolver, Uri uri) {
+    public Notes.NewImage selected(ContentResolver resolver, Uri uri) {
         String mime = resolver.getType(uri);
         if (mime == null) {
             String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
@@ -29,7 +29,7 @@ final class ImagePicker {
         return new Notes.NewImage(mime.toLowerCase(Locale.ROOT), () -> resolver.openInputStream(uri));
     }
 
-    static Bitmap thumbnail(Notes.OpenImage source) throws IOException {
+    public static Bitmap thumbnail(Notes.OpenImage source) throws IOException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         try (InputStream input = source.open()) { BitmapFactory.decodeStream(input, null, options); }
