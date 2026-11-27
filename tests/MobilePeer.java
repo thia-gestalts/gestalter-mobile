@@ -105,6 +105,23 @@ public final class MobilePeer {
                 save(replica, "Guest capture", true, picture);
                 profile.signIn(PIPE, ORIGIN, "Mobile.E2E", PASSWORD, true, true, "Gestalter Android host");
                 sync(profile.replica());
+                require(profile.auth() == Profile.Auth.ACTIVE, "Sign-in did not activate the account");
+                try {
+                    profile.signIn(OFFLINE, ORIGIN, "mobile.e2e", PASSWORD, false, false, "Duplicate");
+                    throw new AssertionError("A live session accepted another sign-in");
+                } catch (IllegalStateException expected) { /* No extra Olymp session is minted. */ }
+                save(profile.replica(), "Kept through expiry", false);
+                try {
+                    profile.replica().sync((origin, path, method, headers, body) -> { throw new Olymp.HttpFailure(401); });
+                    throw new AssertionError("Expected the rejected token to fail");
+                } catch (Olymp.HttpFailure expected) {
+                    require(profile.auth() == Profile.Auth.REJECTED, "A 401 did not mark the session rejected");
+                }
+                profile.signIn(PIPE, ORIGIN, "mobile.e2e", PASSWORD, false, false, "Gestalter Android renewed");
+                require(profile.auth() == Profile.Auth.ACTIVE, "Signing in again did not resume the session");
+                require(profile.replica().pending(), "Signing in again dropped pending work");
+                sync(profile.replica());
+                note(profile.replica(), "Kept through expiry");
                 imageMatches(profile.replica(), note(profile.replica(), "Guest capture"), png);
                 send("result", profile.replica().status());
                 break;

@@ -14,6 +14,7 @@ public final class Replica {
     private final byte[] context;
     private State state;
     private volatile String status;
+    private volatile boolean rejected;
 
     private static final class State {
         final Manifest base;
@@ -52,6 +53,8 @@ public final class Replica {
     Olymp.Session account() { return session.token == null ? null : session; }
 
     public String status() { return status; }
+    /** Olymp refused this session's token; only a new sign-in can resume sync. */
+    boolean rejected() { return rejected; }
 
     public synchronized List<Notes.Note> notes() {
         return Notes.project(state.base);
@@ -250,6 +253,7 @@ public final class Replica {
             for (int attempt = 0; attempt < 5; attempt++) {
                 try {
                     syncRound(transport);
+                    rejected = false;
                     return;
                 } catch (LocalChanged retry) {
                     if (attempt == 4) {
@@ -262,7 +266,10 @@ public final class Replica {
             }
         } catch (Olymp.HttpFailure error) {
             switch (error.status) {
-                case 401: status = "Sign in again"; break;
+                case 401:
+                    rejected = true;
+                    status = "Signed out by Olymp";
+                    break;
                 case 413: status = "Storage limit reached"; break;
                 default: status = "Sync incomplete"; break;
             }

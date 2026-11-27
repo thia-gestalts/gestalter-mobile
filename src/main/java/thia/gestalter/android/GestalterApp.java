@@ -68,7 +68,7 @@ public final class GestalterApp extends Application {
     }
 
     private void schedule() {
-        if (profile.account() == null) signals.cancel();
+        if (profile.auth() != Profile.Auth.ACTIVE) signals.cancel();
         else signals.schedule(profile.replica().pending());
     }
 
@@ -94,7 +94,8 @@ public final class GestalterApp extends Application {
         boolean retry = false;
         try {
             Profile current = initialized.get();
-            if (current.account() != null) {
+            // A rejected token stays rejected until the user signs in again.
+            if (current.auth() == Profile.Auth.ACTIVE) {
                 current.replica().sync(transport);
                 retry = current.replica().pending();
             }
@@ -102,6 +103,7 @@ public final class GestalterApp extends Application {
             retry = false;
         } catch (Olymp.HttpFailure error) {
             retry = error.status != 401 && error.status != 403 && error.status != 413;
+            if (error.status == 401) main.post(this::schedule);
         } catch (Exception error) {
             retry = true;
         } finally {

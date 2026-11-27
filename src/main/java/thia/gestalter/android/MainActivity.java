@@ -49,6 +49,7 @@ public final class MainActivity extends Activity {
     private final ImagePicker picker = new ImagePicker();
     private final Runnable observer = this::refresh;
     private Screen screen = Screen.CAPTURE;
+    private Profile.Auth accountShown;
     private Screen editorParent = Screen.CAPTURE;
     private Draft capture = new Draft(null);
     private Draft editor;
@@ -257,7 +258,9 @@ public final class MainActivity extends Activity {
         workspace.setText(app.status());
         updateButtons();
         if (screen == Screen.QUEUE && !busy) loadQueue();
-        if (screen == Screen.ACCOUNT && page.getChildCount() == 1 && app.profile() != null) show(Screen.ACCOUNT);
+        Profile profile = app.profile();
+        if (screen == Screen.ACCOUNT && !busy && profile != null && profile.auth() != accountShown)
+            show(Screen.ACCOUNT);
     }
 
     private void composer(Draft draft) {
@@ -538,35 +541,48 @@ public final class MainActivity extends Activity {
 
     private void account() {
         Profile profile = app.profile();
+        accountShown = profile == null ? null : profile.auth();
         if (profile == null) {
             fill(page, text(app.status(), 16, MUTED));
             return;
         }
+        String origin = BuildConfig.OLYMP_ORIGIN;
         Olymp.Session active = profile.account();
-        if (active != null) {
-            fill(page, text(active.name, 19, INK));
-            fill(page, text(active.origin, 14, MUTED));
-            EditText password = field("Password", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD, "");
-            fill(actions, button("Sign in again", true,
-                    () -> authenticate(active.origin, active.name, password, false, false)));
-            fill(actions, button("Sign out", false, () -> {
-                if (busy) return;
-                accountWork(() -> { profile.signOut(app.transport); return null; }, true);
-            }));
-        } else {
-            EditText service = field("Olymp origin", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI,
-                    "http://127.0.0.1:8787");
+        if (active == null) {
+            fill(page, text("Sign in to sync notes with " + origin + ".", 14, MUTED));
             EditText name = field("Login name", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL, "");
             EditText password = field("Password", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD, "");
             CheckBox include = new CheckBox(this);
             include.setText("Include notes from this local workspace");
             include.setChecked(true);
             margin(page, include, 9);
-            fill(actions, button("Sign in", true, () -> authenticate(service.getText().toString(),
+            fill(actions, button("Sign in", true, () -> authenticate(origin,
                     name.getText().toString(), password, false, include.isChecked())));
-            fill(actions, button("Create account", false, () -> authenticate(service.getText().toString(),
+            fill(actions, button("Create account", false, () -> authenticate(origin,
                     name.getText().toString(), password, true, include.isChecked())));
+            return;
         }
+        fill(page, text(active.name, 19, INK));
+        fill(page, text(active.origin, 14, MUTED));
+        boolean here = active.origin.equals(origin);
+        if (!here) {
+            fill(page, text("This version of Gestalter syncs with " + origin
+                    + ". Let pending notes sync, then sign out and sign in again to move this account.", 14, MUTED));
+        }
+        if (accountShown == Profile.Auth.REJECTED) {
+            fill(page, text("Olymp ended this session, so sync is paused. Notes on this device are kept.", 14, ERROR));
+            if (here) {
+                EditText password = field("Password", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD, "");
+                fill(actions, button("Sign in again", true,
+                        () -> authenticate(active.origin, active.name, password, false, false)));
+            }
+        } else if (here) {
+            fill(page, text("Signed in. Notes sync automatically.", 14, MUTED));
+        }
+        fill(actions, button("Sign out", false, () -> {
+            if (busy) return;
+            accountWork(() -> { profile.signOut(app.transport); return null; }, true);
+        }));
     }
 
     private void authenticate(String origin, String name, EditText field, boolean signup, boolean includeLocal) {

@@ -41,8 +41,15 @@ public final class Profile {
         replica = new Replica(disk, directory, account == null ? guest : account);
     }
 
+    public enum Auth { GUEST, ACTIVE, REJECTED }
+
     public Replica replica() { return replica; }
     public Olymp.Session account() { return replica.account(); }
+
+    public Auth auth() {
+        Replica current = replica;
+        return current.account() == null ? Auth.GUEST : current.rejected() ? Auth.REJECTED : Auth.ACTIVE;
+    }
 
     private static Olymp.Session newGuest() {
         return new Olymp.Session("local:", UUID.randomUUID().toString(), "Local workspace", null, Crypto.random(32));
@@ -58,6 +65,7 @@ public final class Profile {
     public synchronized void signIn(Olymp.Transport transport, String origin, String name, byte[] password,
             boolean signup, boolean includeLocal, String device) throws Exception {
         Olymp.Session account = account();
+        if (auth() == Auth.ACTIVE) throw new IllegalStateException("Already signed in.");
         if (account != null && (!Olymp.origin(origin).equals(account.origin) || signup
                 || !account.name.equalsIgnoreCase(name.trim())))
             throw new IllegalStateException("Sign out before switching accounts.");

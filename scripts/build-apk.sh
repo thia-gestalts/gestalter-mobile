@@ -6,17 +6,35 @@ sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:?Set ANDROID_HOME to the Android SDK}}
 tools="$sdk/build-tools/35.0.0"
 platform="$sdk/platforms/android-35/android.jar"
 
+# The Olymp origin is fixed per build; users never type it. Override with OLYMP_ORIGIN,
+# e.g. OLYMP_ORIGIN=http://10.0.2.2:8787 for a local Olymp reached from the emulator.
+origin=${OLYMP_ORIGIN:-https://gestalter.koljasam.com}
+if [[ ! "$origin" =~ ^(https://[A-Za-z0-9.-]+|http://(localhost|127\.0\.0\.1|10\.0\.2\.2|\[::1\]))(:[0-9]+)?$ ]]; then
+    echo "OLYMP_ORIGIN must be an HTTPS origin (or HTTP on loopback) without a path: $origin" >&2
+    exit 1
+fi
+
 if (( $# == 0 )); then set -- arm64-v8a x86_64; fi
 scripts/build-native.sh "$@"
 mkdir -p build/apk/{classes,dex,package}
-rm -rf build/apk/classes/* build/apk/dex/* build/apk/package/*
+rm -rf build/apk/classes/* build/apk/dex/* build/apk/package/* build/apk/generated
 gson=vendor/gson-2.11.0.jar
 (cd vendor && sha256sum --check SHA256SUMS)
 
 "$tools/aapt2" compile --dir src/main/res -o build/apk/resources.zip
 "$tools/aapt2" link -I "$platform" --manifest src/main/AndroidManifest.xml \
     -o build/apk/package/resources.apk build/apk/resources.zip
-mapfile -t sources < <(find src/main/java -name '*.java' | sort)
+
+mkdir -p build/apk/generated/thia/gestalter/android
+cat > build/apk/generated/thia/gestalter/android/BuildConfig.java <<EOF2
+package thia.gestalter.android;
+
+final class BuildConfig {
+    private BuildConfig() {}
+    static final String OLYMP_ORIGIN = "$origin";
+}
+EOF2
+mapfile -t sources < <(find src/main/java build/apk/generated -name '*.java' | sort)
 javac --release 8 -Xlint:-options -cp "$platform:$gson" -d build/apk/classes "${sources[@]}"
 jar cf build/apk/classes.jar -C build/apk/classes .
 "$tools/d8" --min-api 26 --lib "$platform" --release --output build/apk/dex build/apk/classes.jar "$gson"
