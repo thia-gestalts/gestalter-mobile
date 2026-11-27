@@ -23,7 +23,7 @@ gson=vendor/gson-2.11.0.jar
 
 "$tools/aapt2" compile --dir src/main/res -o build/apk/resources.zip
 "$tools/aapt2" link -I "$platform" --manifest src/main/AndroidManifest.xml \
-    -o build/apk/package/resources.apk build/apk/resources.zip
+    --java build/apk/generated -o build/apk/package/resources.apk build/apk/resources.zip
 
 mkdir -p build/apk/generated/thia/gestalter/android
 cat > build/apk/generated/thia/gestalter/android/BuildConfig.java <<EOF2

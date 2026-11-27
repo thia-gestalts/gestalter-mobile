@@ -132,6 +132,16 @@ public final class Replica {
     public synchronized Notes.Note save(Notes.Note prior, String text, boolean noQueue,
             List<Notes.Image> kept, List<Notes.NewImage> added) throws Exception {
         if (text.trim().isEmpty()) throw new IllegalArgumentException("Write something before saving.");
+        return store(prior, text, noQueue, kept, added);
+    }
+
+    /** Tags the note no-queue, leaving its text and images untouched (even if its text is empty). */
+    public synchronized Notes.Note excludeFromQueue(Notes.Note note) throws Exception {
+        return store(note, note.text, true, note.images, Collections.emptyList());
+    }
+
+    private Notes.Note store(Notes.Note prior, String text, boolean noQueue,
+            List<Notes.Image> kept, List<Notes.NewImage> added) throws Exception {
         requireCurrent(prior);
         String key = prior == null ? null : prior.key;
         JsonObject value;

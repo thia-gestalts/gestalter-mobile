@@ -165,6 +165,15 @@ public final class Notes {
     }
 
     public static List<Note> queue(List<Note> notes, Random random) {
+        return queue(notes, random, Collections.emptyList(), Collections.emptySet());
+    }
+
+    /**
+     * Picks three random notes without the no-queue tag. Still-eligible notes in {@code keep} stay
+     * selected; the remaining slots prefer notes outside {@code avoid}, so "Next" shows new notes
+     * whenever enough exist.
+     */
+    public static List<Note> queue(List<Note> notes, Random random, Collection<String> keep, Set<String> avoid) {
         Set<String> excluded = new HashSet<>();
         Map<String, List<Note>> groups = new LinkedHashMap<>();
         for (Note note : notes) {
@@ -173,9 +182,15 @@ public final class Notes {
         }
         List<String> eligible = new ArrayList<>(groups.keySet());
         eligible.removeAll(excluded);
+        List<String> chosen = new ArrayList<>();
+        for (String key : keep)
+            if (chosen.size() < 3 && eligible.contains(key) && !chosen.contains(key)) chosen.add(key);
+        eligible.removeAll(chosen);
         Collections.shuffle(eligible, random);
+        eligible.sort(Comparator.comparing(avoid::contains));
+        for (String key : eligible) if (chosen.size() < 3) chosen.add(key);
         List<Note> selected = new ArrayList<>();
-        for (String key : eligible.subList(0, Math.min(3, eligible.size()))) selected.addAll(groups.get(key));
+        for (String key : chosen) selected.addAll(groups.get(key));
         return selected;
     }
 }

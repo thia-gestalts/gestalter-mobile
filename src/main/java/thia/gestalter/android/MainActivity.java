@@ -56,7 +56,7 @@ public final class MainActivity extends Activity {
     private Draft picking;
     private Notes.Note latest;
     private boolean busy;
-    private long queueSeed = new Random().nextLong();
+    private List<String> queueKeys = new ArrayList<>();
     private int queueRequest;
     private LinearLayout page;
     private LinearLayout queueCards;
@@ -231,7 +231,7 @@ public final class MainActivity extends Activity {
     private void leave(Screen target) {
         hideKeyboard();
         editor = null;
-        if (target == Screen.QUEUE) queueSeed = new Random().nextLong();
+        if (target == Screen.QUEUE && screen != Screen.EDITOR) queueKeys = new ArrayList<>();
         show(target);
     }
 
@@ -257,7 +257,7 @@ public final class MainActivity extends Activity {
     private void refresh() {
         workspace.setText(app.status());
         updateButtons();
-        if (screen == Screen.QUEUE && !busy) loadQueue();
+        if (screen == Screen.QUEUE && !busy) loadQueue(false);
         Profile profile = app.profile();
         if (screen == Screen.ACCOUNT && !busy && profile != null && profile.auth() != accountShown)
             show(Screen.ACCOUNT);
@@ -483,14 +483,12 @@ public final class MainActivity extends Activity {
     private void queue() {
         queueCards = column();
         fill(page, queueCards);
-        fill(actions, button("Reshuffle", false, () -> {
-            queueSeed = new Random().nextLong();
-            loadQueue();
-        }));
-        loadQueue();
+        fill(actions, button("Next", true, () -> loadQueue(true)));
+        loadQueue(false);
     }
 
-    private void loadQueue() {
+    /** Next picks three notes other than the shown ones; otherwise the shown notes stay put. */
+    private void loadQueue(boolean next) {
         int request = ++queueRequest;
         LinearLayout target = queueCards;
         if (target == null) return;
@@ -499,10 +497,14 @@ public final class MainActivity extends Activity {
             if (target.getChildCount() == 0) fill(target, text("Opening Queue…", 16, MUTED));
             return;
         }
-        long seed = queueSeed;
+        List<String> keep = next ? Collections.emptyList() : new ArrayList<>(queueKeys);
+        Set<String> avoid = next ? new HashSet<>(queueKeys) : Collections.emptySet();
         Replica replica = profile.replica();
-        app.local(() -> Notes.queue(replica.notes(), new Random(seed)), notes -> {
+        app.local(() -> Notes.queue(replica.notes(), new Random(), keep, avoid), notes -> {
             if (isDestroyed() || screen != Screen.QUEUE || request != queueRequest) return;
+            List<String> keys = new ArrayList<>();
+            for (Notes.Note note : notes) if (!keys.contains(note.key)) keys.add(note.key);
+            queueKeys = keys;
             target.removeAllViews();
             if (notes.isEmpty()) fill(target, text("No notes in Queue yet.", 16, MUTED));
             for (Notes.Note note : notes) {
@@ -517,11 +519,39 @@ public final class MainActivity extends Activity {
                 fill(card, preview);
                 if (!note.images.isEmpty())
                     fill(card, text(note.images.size() == 1 ? "1 image" : note.images.size() + " images", 13, MUTED));
-                fill(card, button(note.conflict ? "Open conflicting version" : "Open note", false,
+                LinearLayout controls = row();
+                weighted(controls, button(note.conflict ? "Open conflicting version" : "Open note", false,
                         () -> edit(note, Screen.QUEUE)));
+                controls.addView(excludeButton(replica, note), new LinearLayout.LayoutParams(dp(48), dp(48)));
+                fill(card, controls);
                 margin(target, card, 8);
             }
         }, this::failure);
+    }
+
+    private ImageButton excludeButton(Replica replica, Notes.Note note) {
+        ImageButton exclude = new ImageButton(this);
+        exclude.setImageResource(thia.gestalter.mobile.R.drawable.hide);
+        exclude.setContentDescription("Exclude from Queue");
+        if (android.os.Build.VERSION.SDK_INT >= 26) exclude.setTooltipText("Exclude from Queue");
+        exclude.setBackgroundColor(Color.TRANSPARENT);
+        exclude.setOnClickListener(view -> {
+            if (busy) return;
+            exclude.setEnabled(false);
+            app.local(() -> {
+                replica.excludeFromQueue(note);
+                app.committed();
+                return null;
+            }, unused -> {
+                if (isDestroyed() || screen != Screen.QUEUE) return;
+                loadQueue(false);
+                message("Excluded from Queue.", false);
+            }, error -> {
+                exclude.setEnabled(true);
+                failure(error);
+            });
+        });
+        return exclude;
     }
 
     private EditText field(String label, int inputType, String value) {
