@@ -35,6 +35,8 @@ Keep topics and artifacts lean enough that auto-collapse is useful. Bibliographi
 
 An event records UTC epoch milliseconds, its source app and app-local activity, and one or more typed targets. A topic target supplies context. Attempts target at least one fact or skill. A supplied score is a number from 0 to 1 for the whole attempt. Omit it for unscored interactions. Zero is an observed score. Apps own sets, aggregation and interpretation.
 
+A note can store its title, Main Markdown (`text`), Extra Markdown, aliases and tags separately. Relationships refer to records by typed identity and can carry a relation label. A note may have content in any of these fields or in its attachments. Older body-only notes retain their Markdown in `text`. [Note examples](examples/v3/records.json)
+
 A note can refer to stored image bytes by attachment UUID and image media type. Keep that UUID stable when moving or syncing the attachment. Apps own the bytes and the mapping from UUID to storage. [Example records](examples/v1/records.json)
 
 An annotation points to one record and can include a human-readable locator such as a page number. A question can name sources that opened it or answered it. To record an activity occurrence as a source, reference its learning event. The event's `origin` identifies the activity within its app. Merely listing a question among an event's targets describes what the event addressed. The question's `openedBy` and `answeredBy` fields express the source's role.

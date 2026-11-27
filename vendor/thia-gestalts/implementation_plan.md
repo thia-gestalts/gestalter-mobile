@@ -7,7 +7,8 @@ Use Draft 2020-12 and select the schema by record kind within the pinned release
 | Kinds | Schema path |
 | --- | --- |
 | Annotation, artifact, claim, entity, fact, flashcard, question, skill, task, topic | `<kind>/v1.json` |
-| Learning event, note | `<kind>/v2.json` |
+| Note | `note/v3.json` |
+| Learning event | `learning-event/v2.json` |
 
 Register all versioned schema files under their declared `$id` values in a local registry. The release uses both `common/v1.json` and `common/v2.json`. The new common version recognizes all twelve kinds in typed references. Note and learning-event v2 use those expanded references. The earlier schema files remain usable by consumers pinned to the six-kind release. Versions select representations. Record equality still compares the exact `kind` and `id` strings. Producers and consumers implement the identity rules in [core.md](core.md).
 
@@ -30,11 +31,11 @@ A downstream consumer can vendor a source snapshot today. Save the fingerprint b
 ```sh
 (
   export LC_ALL=C
-  sha256sum */v[12].json core.md examples/v[12]/*.json scripts/validate_examples.py | sha256sum
+  sha256sum */v[123].json core.md examples/v[123]/*.json scripts/validate_examples.py | sha256sum
 )
 ```
 
-Expected SHA-256 for this release is `b7f41c4542444d9548323b076a4d659606d0ab4b6e40de63f76509953c5ace1f`.
+Expected SHA-256 for this release is `bc3f4e6cd5218c82f7340fc355050bed7547c43dfe207ef743103a22b140a48a`.
 
 For a Git pin, use the full commit ID of the source revision that contains this release. Set `GESTALTS_URL` to the source repository URL and `GESTALTS_COMMIT` to that ID. From the consuming repository root, run the following once and commit the submodule pin.
 

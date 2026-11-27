@@ -1,0 +1,23 @@
+[
+  {
+    "kind": "note",
+    "id": "42972f9d-67ae-4753-bba2-270beb568d2d",
+    "title": "A note about curves",
+    "text": "Compare the curve at successive values of **t**.",
+    "extra": "Revisit the endpoints.",
+    "aliases": ["Interpolation note"],
+    "tags": ["geometry"],
+    "related": [
+      {
+        "kind": "note",
+        "id": "42972f9d-67ae-4753-bba2-270beb568d2e",
+        "relation": "related"
+      }
+    ]
+  },
+  {
+    "kind": "note",
+    "id": "42972f9d-67ae-4753-bba2-270beb568d2e",
+    "title": "Endpoint observations"
+  }
+]

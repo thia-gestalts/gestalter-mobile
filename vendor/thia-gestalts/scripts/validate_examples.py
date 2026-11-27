@@ -19,7 +19,7 @@ RECORD_VERSIONS = {
     "fact": "v1",
     "flashcard": "v1",
     "learning-event": "v2",
-    "note": "v2",
+    "note": "v3",
     "question": "v1",
     "skill": "v1",
     "task": "v1",
@@ -126,6 +126,7 @@ def main():
     for record in original_records:
         validate(record, "v1")
     records = original_records + read_json(EXAMPLES / "v2" / "records.json")
+    records += read_json(EXAMPLES / "v3" / "records.json")
     for record in records:
         validate(record)
     if {record["kind"] for record in records} != RECORD_VERSIONS.keys():

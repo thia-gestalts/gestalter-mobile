@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 pin=$(python3 -c 'import json; print(json.load(open("vendor/thia-gestalts.pin.json"))["releaseSha256"])')
 gestalts=$(cd vendor/thia-gestalts
     export LC_ALL=C
-    sha256sum */v[12].json core.md examples/v[12]/*.json scripts/validate_examples.py | sha256sum)
+    sha256sum */v[123].json core.md examples/v[123]/*.json scripts/validate_examples.py | sha256sum)
 [[ "${gestalts%% *}" == "$pin" ]]
 python3.14 vendor/thia-gestalts/scripts/validate_examples.py
 cargo fmt --manifest-path native/Cargo.toml --check

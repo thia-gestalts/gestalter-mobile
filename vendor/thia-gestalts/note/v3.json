@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thia.example/gestalts/note/v3.json",
+  "title": "Note",
+  "description": "Learner-authored text with optional image attachments and links to related records. Mint an independent UUID at creation.",
+  "$ref": "../common/v2.json#/$defs/recordIdentity",
+  "properties": {
+    "kind": {
+      "const": "note"
+    },
+    "text": {
+      "type": "string",
+      "description": "Main Markdown body."
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/v2.json#/$defs/imageReference"
+      }
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/v2.json#/$defs/recordIdentity",
+        "properties": {
+          "relation": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    "title": {
+      "type": "string"
+    },
+    "extra": {
+      "type": "string"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
+    }
+  },
+  "unevaluatedProperties": false,
+  "anyOf": [
+    {
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "title": {
+          "pattern": "\\S"
+        }
+      }
+    },
+    {
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "pattern": "\\S"
+        }
+      }
+    },
+    {
+      "required": [
+        "extra"
+      ],
+      "properties": {
+        "extra": {
+          "pattern": "\\S"
+        }
+      }
+    },
+    {
+      "required": [
+        "aliases"
+      ],
+      "properties": {
+        "aliases": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": [
+        "tags"
+      ],
+      "properties": {
+        "tags": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": [
+        "related"
+      ],
+      "properties": {
+        "related": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": [
+        "attachments"
+      ],
+      "properties": {
+        "attachments": {
+          "minItems": 1
+        }
+      }
+    }
+  ]
+}
