@@ -10,6 +10,7 @@ import java.util.*;
 import thia.gestalter.android.navigation.*;
 import thia.gestalter.android.screens.account.AccountScreen;
 import thia.gestalter.android.screens.capture.CaptureScreen;
+import thia.gestalter.android.screens.lists.ListsScreen;
 import thia.gestalter.android.screens.note.NoteScreen;
 import thia.gestalter.android.screens.notes.NotesScreen;
 import thia.gestalter.android.screens.queue.QueueScreen;
@@ -21,8 +22,9 @@ import thia.gestalter.android.workspace.*;
  * the tab bar. Each tab keeps its screen; note editors are pushed on top of the current tab.
  */
 public final class MainActivity extends Activity implements ScreenHost {
-    private static final Route.Kind[] TABS = { Route.Kind.CAPTURE, Route.Kind.NOTES, Route.Kind.QUEUE, Route.Kind.ACCOUNT };
-    private static final String[] TAB_TITLES = { "Capture", "Notes", "Queue", "Account" };
+    private static final Route.Kind[] TABS = { Route.Kind.CAPTURE, Route.Kind.NOTES, Route.Kind.LISTS, Route.Kind.QUEUE,
+            Route.Kind.ACCOUNT };
+    private static final String[] TAB_TITLES = { "Capture", "Notes", "Lists", "Queue", "Account" };
 
     private final Map<Route.Kind, Screen> tabs = new EnumMap<>(Route.Kind.class);
     private final List<Screen> pushed = new ArrayList<>();
@@ -65,6 +67,7 @@ public final class MainActivity extends Activity implements ScreenHost {
         switch (route.kind) {
             case CAPTURE: return new CaptureScreen(this, state);
             case NOTES: return new NotesScreen(this, state);
+            case LISTS: return new ListsScreen(this, state);
             case QUEUE: return new QueueScreen(this, state);
             case ACCOUNT: return new AccountScreen(this, state);
             case NOTE: return new NoteScreen(this, route, state);

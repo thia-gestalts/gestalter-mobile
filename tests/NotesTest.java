@@ -156,7 +156,54 @@ public final class NotesTest {
         require(projected.title.equals("A note about curves") && projected.aliases.size() == 1
                 && projected.related.get(0).relation.equals("related"), "v3 example did not project");
 
+        // Lists emerge from list-* tags; renaming moves the tag, merges, and patches titles.
+        Replica lists = replica(Files.createTempDirectory("gestalter-lists-test"));
+        require(Lists.title("list-grocery-items").equals("Grocery Items"), "Tag did not become a title");
+        require(Lists.tag("  Books to read! ").equals("list-books-to-read"), "Title did not become a tag");
+        fails("Give the list a title", () -> Lists.tag(" !! "));
+        Notes.Note milk = lists.save(null, tagged("Milk", "list-grocery-items", "food"));
+        Notes.Fields untitled = tagged("", "list-grocery-items");
+        untitled.text = "# Bread";
+        Notes.Note bread = lists.save(null, untitled);
+        Notes.Note dune = lists.save(null, tagged("Dune", "list-books-to-read", "list-grocery-items"));
+        Notes.Note stray = lists.save(null, tagged("Stray", "list-", "List-Caps", "list-bad--tag", "listing"));
+        Notes.Note skipped = lists.excludeFromQueue(lists.save(null, tagged("Eggs", "list-grocery-items")));
+        List<Lists.ListOf> found = lists.lists();
+        require(found.size() == 2 && found.get(0).title.equals("Books To Read")
+                && found.get(1).title.equals("Grocery Items"), "Unexpected lists: " + found.size());
+        Lists.ListOf groceries = found.get(1);
+        require(groceries.notes.size() == 4, "Grocery list should hold four notes");
+        require(Lists.label(groceries.notes.get(0)).equals("Bread"), "Untitled note must show its headline");
+        List<String> drawn = Lists.sample(groceries, new Random(1), Collections.emptyList(), Collections.emptySet());
+        require(drawn.size() == 3, "A sample holds three notes");
+        List<String> next = Lists.sample(groceries, new Random(2), Collections.emptyList(), new HashSet<>(drawn));
+        require(next.size() == 3 && !drawn.contains(next.get(0)), "Shuffle must prefer unseen notes first");
+
+        Map<String, String> titles = new HashMap<>();
+        titles.put(milk.key, "Oat milk");
+        titles.put(bread.key, "");
+        titles.put(dune.key, "Dune");
+        List<Lists.ListOf> merged = lists.saveList("list-grocery-items", "Books to read", titles);
+        require(merged.size() == 1 && merged.get(0).notes.size() == 4, "Rename must merge into one list");
+        Notes.Note milkAfter = only(lists, milk.key);
+        require(milkAfter.title.equals("Oat milk") && milkAfter.tags.equals(Arrays.asList("list-books-to-read", "food")),
+                "Milk was not renamed: " + milkAfter.tags);
+        require(only(lists, dune.key).tags.equals(Collections.singletonList("list-books-to-read")), "Merge must dedupe the tag");
+        require(!only(lists, bread.key).value.has("title"), "An unchanged empty title must not be written");
+        require(only(lists, skipped.key).noQueue, "Renaming must keep Skip Queue");
+        require(only(lists, stray.key).version.equals(stray.version), "Non-members must not be written");
+        fails("no longer exists", () -> lists.saveList("list-grocery-items", "Gone", Collections.emptyMap()));
+        fails("left this list", () -> lists.saveList("list-books-to-read", "Books",
+                Collections.singletonMap(stray.key, "x")));
+        fails("changed on another device", () -> lists.save(milk, Notes.Fields.of(milk)));
+
         System.out.println("NotesTest: " + checks + " checks passed.");
+    }
+
+    private static Notes.Fields tagged(String title, String... tags) {
+        Notes.Fields fields = titled(title);
+        fields.tags.addAll(Arrays.asList(tags));
+        return fields;
     }
 
     private static Notes.Fields titled(String title) {

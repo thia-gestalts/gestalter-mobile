@@ -6,7 +6,7 @@ import thia.gestalter.core.Notes;
 
 /** Where the app is: one of the tabs, or a note editor pushed on top of a tab. */
 public final class Route {
-    public enum Kind { CAPTURE, NOTES, QUEUE, ACCOUNT, NOTE }
+    public enum Kind { CAPTURE, NOTES, LISTS, QUEUE, ACCOUNT, NOTE }
 
     public final Kind kind;
     /** For {@link Kind#NOTE}: the record key, or null for a note that is not saved yet. */

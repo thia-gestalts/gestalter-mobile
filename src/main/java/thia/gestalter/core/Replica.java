@@ -148,6 +148,42 @@ public final class Replica {
         return store(note, fields);
     }
 
+    public synchronized List<Lists.ListOf> lists() {
+        return Lists.project(Notes.project(state.base));
+    }
+
+    /**
+     * Renames a list (its tag on every member, merging into an existing list of that name) and sets
+     * the given note titles, keyed by note key. Every member is checked before anything is written.
+     */
+    public synchronized List<Lists.ListOf> saveList(String tag, String title, Map<String, String> titles)
+            throws Exception {
+        String renamed = Lists.tag(title);
+        Lists.ListOf list = null;
+        for (Lists.ListOf candidate : lists()) if (candidate.tag.equals(tag)) list = candidate;
+        if (list == null) throw new IllegalStateException("This list no longer exists.");
+        if (list.conflict) throw new IllegalStateException("Resolve conflicting versions in this list first.");
+        Set<String> members = new HashSet<>();
+        for (Notes.Note note : list.notes) {
+            requireCurrent(note);
+            members.add(note.key);
+        }
+        if (!members.containsAll(titles.keySet()))
+            throw new IllegalStateException("A note left this list. Reopen it before editing.");
+        for (Notes.Note note : list.notes) {
+            Notes.Fields fields = Notes.Fields.of(note);
+            if (!renamed.equals(tag)) {
+                fields.tags.replaceAll(item -> item.equals(tag) ? renamed : item);
+                int first = fields.tags.indexOf(renamed);
+                for (int i = fields.tags.size() - 1; i > first; i--)
+                    if (fields.tags.get(i).equals(renamed)) fields.tags.remove(i);
+            }
+            if (titles.containsKey(note.key)) fields.title = titles.get(note.key);
+            if (!fields.equals(Notes.Fields.of(note))) store(note, fields);
+        }
+        return lists();
+    }
+
     public synchronized List<Links.Target> linkTargets() {
         return Links.project(state.base, Notes.project(state.base));
     }

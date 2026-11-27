@@ -167,6 +167,17 @@ public final class Workspace {
         read(replica -> Notes.queue(replica.notes(), new Random(), keep, avoid), done, failed);
     }
 
+    public void lists(Consumer<List<Lists.ListOf>> done, Consumer<Exception> failed) {
+        read(Replica::lists, done, failed);
+    }
+
+    /** Renames a list and sets its notes' titles (by note key) in one local write. */
+    public void saveList(String tag, String title, Map<String, String> titles, Consumer<List<Lists.ListOf>> done,
+            Consumer<Exception> failed) {
+        Map<String, String> snapshot = new LinkedHashMap<>(titles);
+        write(replica -> replica.saveList(tag, title, snapshot), done, failed);
+    }
+
     public void capture(String text, List<Notes.NewImage> images, Consumer<Notes.Note> done,
             Consumer<Exception> failed) {
         List<Notes.NewImage> picked = new ArrayList<>(images);
