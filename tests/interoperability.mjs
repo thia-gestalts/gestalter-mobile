@@ -256,6 +256,7 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     for (const field of ['title', 'aliases', 'extra']) {
       assert.deepEqual(mobileEdit[field], desktopValue[field]);
     }
+    assert.equal(mobileEdit.related[0].relation, 'cited in');
     assert.equal(await desktop.call('getNote', [disposable.id]), null);
 
     disposeDesktop();
@@ -274,7 +275,8 @@ test('Olymp 1.1 mobile restart, desktop projection and whole-base recovery', { t
     assert.deepEqual(Buffer.from(await recovered.attachment(preserved.files[0])), pixels);
     assert.deepEqual(Buffer.from(await recovered.attachment(preserved.files[1])), unknownOtherBytes);
     const edited = heads.find(h => h.key === sdk.recordKey(desktopValue));
-    assert.deepEqual(edited.value, { ...desktopValue, text: 'Updated from Queue', tags: ['desktop-tag', 'no-queue'] });
+    assert.deepEqual(edited.value, { ...desktopValue, text: 'Updated from Queue', tags: ['desktop-tag', 'no-queue'],
+      related: [{ ...related[0], relation: 'cited in' }] });
     assert.equal(heads.find(h => h.key === sdk.recordKey({ kind: 'note', id: disposable.id })).deleted, true);
     recovered.close();
 

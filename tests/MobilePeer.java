@@ -45,14 +45,19 @@ public final class MobilePeer {
                 .orElseThrow(() -> new AssertionError("Missing note " + text));
     }
 
+    /** The note as Queue shows it. Queue keeps a shown note, so more than three eligible notes cannot hide it. */
     private static Notes.Note queued(Replica replica, String text) {
-        return Notes.queue(replica.notes(), new Random(19)).stream().filter(item -> item.text.equals(text)).findFirst()
+        List<String> shown = Collections.singletonList(note(replica, text).key);
+        return Notes.queue(replica.notes(), new Random(19), shown, Collections.emptySet()).stream()
+                .filter(item -> item.text.equals(text)).findFirst()
                 .orElseThrow(() -> new AssertionError("Missing Queue note " + text));
     }
 
     private static Notes.Note save(Replica replica, String text, boolean exclude, Notes.NewImage... images)
             throws Exception {
-        return replica.save(null, text, exclude, Collections.emptyList(), Arrays.asList(images));
+        Notes.Fields fields = Notes.Fields.capture(text, Arrays.asList(images));
+        fields.noQueue = exclude;
+        return replica.save(null, fields);
     }
 
     private static void imageMatches(Replica replica, Notes.Note note, Path png) throws Exception {
@@ -159,8 +164,14 @@ public final class MobilePeer {
                 break;
             case "queue-crud":
                 Notes.Note original = queued(replica, "Desktop note");
-                Notes.Note changed = replica.save(original, "Updated from Queue", true, original.images,
-                        Collections.emptyList());
+                Notes.Fields edit = Notes.Fields.of(original);
+                edit.text = "Updated from Queue";
+                edit.noQueue = true;
+                require(edit.related.size() == 1, "Desktop link was not projected");
+                edit.related.set(0, edit.related.get(0).withRelation("cited in"));
+                Notes.Note changed = replica.save(original, edit);
+                require(changed.title.equals("Desktop title") && changed.tags.equals(Arrays.asList("desktop-tag")),
+                        "Editing dropped desktop fields");
                 replica.delete(queued(replica, "Disposable Queue note"));
                 require(Notes.queue(replica.notes(), new Random(19)).stream()
                         .noneMatch(n -> n.key.equals(changed.key) || n.text.equals("Disposable Queue note")),

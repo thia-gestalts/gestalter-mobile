@@ -129,19 +129,30 @@ public final class Replica {
         return ids;
     }
 
-    public synchronized Notes.Note save(Notes.Note prior, String text, boolean noQueue,
-            List<Notes.Image> kept, List<Notes.NewImage> added) throws Exception {
+    /** Saves the editor's fields as a new note ({@code prior == null}) or a new version of {@code prior}. */
+    public synchronized Notes.Note save(Notes.Note prior, Notes.Fields fields) throws Exception {
+        Notes.validate(fields);
+        return store(prior, fields);
+    }
+
+    /** Quick add: a new note holding only {@code text} and the picked images. */
+    public synchronized Notes.Note capture(String text, List<Notes.NewImage> images) throws Exception {
         if (text.trim().isEmpty()) throw new IllegalArgumentException("Write something before saving.");
-        return store(prior, text, noQueue, kept, added);
+        return store(null, Notes.Fields.capture(text, images));
     }
 
-    /** Tags the note no-queue, leaving its text and images untouched (even if its text is empty). */
+    /** Tags the note no-queue, leaving everything else untouched (even if the note has no content). */
     public synchronized Notes.Note excludeFromQueue(Notes.Note note) throws Exception {
-        return store(note, note.text, true, note.images, Collections.emptyList());
+        Notes.Fields fields = Notes.Fields.of(note);
+        fields.noQueue = true;
+        return store(note, fields);
     }
 
-    private Notes.Note store(Notes.Note prior, String text, boolean noQueue,
-            List<Notes.Image> kept, List<Notes.NewImage> added) throws Exception {
+    public synchronized List<Links.Target> linkTargets() {
+        return Links.project(state.base, Notes.project(state.base));
+    }
+
+    private Notes.Note store(Notes.Note prior, Notes.Fields fields) throws Exception {
         requireCurrent(prior);
         String key = prior == null ? null : prior.key;
         JsonObject value;
@@ -152,12 +163,11 @@ public final class Replica {
         } else {
             value = prior.value.deepCopy();
         }
-        value.addProperty("text", text);
-        Notes.updateNoQueue(value, noQueue);
+        Notes.apply(value, prior, fields);
         JsonArray files = new JsonArray();
         JsonArray refs = new JsonArray();
         Set<String> checked = new HashSet<>();
-        for (Notes.Image image : kept) {
+        for (Notes.Image image : fields.images) {
             if (prior == null || !prior.images.contains(image)) throw new IllegalArgumentException("Unexpected image.");
             for (JsonElement chunk : image.chunks) {
                 String id = chunk.getAsString();
@@ -166,7 +176,7 @@ public final class Replica {
             refs.add(image.reference);
             files.add(image.chunks);
         }
-        for (Notes.NewImage image : added) {
+        for (Notes.NewImage image : fields.added) {
             refs.add(Json.object("id", UUID.randomUUID().toString(), "mediaType", image.mediaType));
             files.add(stageImage(image));
         }
@@ -175,10 +185,10 @@ public final class Replica {
 
         JsonObject head = head(key, value, files, false);
         if (prior != null && prior.observed.size() == 1) {
-            SortedSet<String> fields = new TreeSet<>(value.keySet());
-            fields.addAll(prior.value.keySet());
-            fields.removeIf(field -> Objects.equals(value.get(field), prior.value.get(field)));
-            head.add("edit", Json.object("from", prior.observed.get(0), "fields", Json.array(fields),
+            SortedSet<String> changed = new TreeSet<>(value.keySet());
+            changed.addAll(prior.value.keySet());
+            changed.removeIf(field -> Objects.equals(value.get(field), prior.value.get(field)));
+            head.add("edit", Json.object("from", prior.observed.get(0), "fields", Json.array(changed),
                     "files", !files.equals(prior.files)));
         }
         write(head, prior == null ? Collections.emptyList() : prior.observed);
